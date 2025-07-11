@@ -1,0 +1,51 @@
+# This workflow triggers Datadog Synthetic tests within your Datadog organization.
+# For more information, see: https://docs.datadoghq.com/synthetics/cicd_integrations/github_actions/
+
+# Note: This workflow uses a third-party action (DataDog/synthetics-ci-github-action),
+# governed by separate terms of service, privacy policy, and support documentation.
+
+name: Run Datadog Synthetic Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  e2e-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Run Datadog Synthetic tests
+      # For additional configuration options, see: https://github.com/marketplace/actions/datadog-synthetics-ci
+      - name: Run Datadog Synthetic Tests
+        uses: DataDog/synthetics-ci-github-action@v3.4.0
+        with:
+          api_key: ${{ secrets.DD_API_KEY }}
+          app_key: ${{ secrets.DD_APP_KEY }}
+          test_search_query: 'tag:e2e-tests' # Modify to match your Datadog test tags (e.g., 'tag:staging')
+          # Optional: Specify public IDs for specific tests (uncomment to use)
+          # public_ids: |
+          #   abc-d3f-ghi
+          #   jkl-mn0-pqr
+          # Optional: Path to a custom global configuration file
+          # config_path: './datadog-ci.json'
+          # Optional: Generate a JUnit report for test results
+          # junit_report: 'synthetics-junit-report.xml'
+          # Optional: Fail CI job on critical errors (e.g., rate limits, auth failures)
+          # fail_on_critical_errors: true
+          # Optional: Fail CI job if no tests are found or explicitly listed tests are missing
+          # fail_on_missing_tests: true
+          # Optional: Override test locations (e.g., specific regions)
+          # locations: |
+          #   aws:us-east-1
+          #   aws:eu-west-1
+          # Optional: Inject custom variables (e.g., for staging environment)
+          # variables: |
+          #   START_URL=https://staging.example.com
+          #   PASSWORD=stagingpassword
