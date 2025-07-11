@@ -48,4 +48,4 @@ jobs:
           # Optional: Inject custom variables (e.g., for staging environment)
           # variables: |
           #   START_URL=https://staging.example.com
-          #   PASSWORD=stagingpassword
+          #   PASSWORD=newsecurepassword123
