@@ -1,75 +1,135 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  Button,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
 
 export default function HomeScreen() {
+  const [eventColor, setEventColor] = useState("#a1c4fd");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [markedDates, setMarkedDates] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
+  const [eventText, setEventText] = useState("");
+  const [events, setEvents] = useState({});
+
+  const handleDayPress = (day) => {
+    setSelectedDate(day.dateString);
+    setModalVisible(true);
+  };
+
+  const handleAddEvent = () => {
+    const newEvents = {
+      ...events,
+      [selectedDate]: eventText,
+    };
+
+    const newMarked = {
+      ...markedDates,
+      [selectedDate]: {
+        marked: true,
+        selected: true,
+        selectedColor: eventColor,
+      },
+    };
+
+    setEvents(newEvents);
+    setMarkedDates(newMarked);
+    setEventText("");
+    setModalVisible(false);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>📅 My Sweet Calendar</Text>
+      <Calendar onDayPress={handleDayPress} markedDates={markedDates} />
+
+      {selectedDate && events[selectedDate] && (
+        <Text style={styles.eventText}>
+          📌 {selectedDate}: {events[selectedDate]}
+        </Text>
+      )}
+
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add event for {selectedDate}</Text>
+            <TextInput
+              placeholder="Write your event..."
+              style={styles.input}
+              value={eventText}
+              onChangeText={setEventText}
+            />
+            <View style={{ flexDirection: "row", marginVertical: 10 }}>
+              {["#a1c4fd", "#fdcb6e", "#fab1a0", "#81ecec"].map((color) => (
+                <TouchableOpacity
+                  key={color}
+                  onPress={() => setEventColor(color)}
+                  style={{
+                    backgroundColor: color,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    margin: 5,
+                    borderWidth: eventColor === color ? 2 : 0,
+                    borderColor: "#333",
+                  }}
+                />
+              ))}
+            </View>
+
+            <Button title="Save Event" onPress={handleAddEvent} />
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 26,
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#6c5ce7",
+    fontWeight: "bold",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  eventText: {
+    marginTop: 20,
+    fontSize: 18,
+    textAlign: "center",
+    color: "#2d3436",
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    margin: 30,
+    borderRadius: 10,
+  },
+  modalTitle: { fontSize: 18, marginBottom: 10 },
+  input: { borderColor: "#ccc", borderWidth: 1, padding: 10, marginBottom: 10 },
+  closeButton: { marginTop: 10, alignItems: "center" },
+  closeText: { color: "#d63031", fontWeight: "bold" },
 });
